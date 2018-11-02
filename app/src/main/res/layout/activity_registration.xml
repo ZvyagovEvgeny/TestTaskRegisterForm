@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="com.belina.registration.ui.registration.RegistrationViewModel" />
+    </data>
+
+
+        <LinearLayout
+            android:id="@+id/registerFormLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@drawable/bg">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="24dp"
+                    android:paddingRight="24dp"
+                    android:paddingTop="60dp"
+                    android:theme="@style/AppThemeNoActionBar">
+
+                    <ImageView
+                        android:id="@+id/logo"
+                        android:layout_width="258dp"
+                        android:layout_height="65dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="60dp"
+                        android:layout_marginTop="60dp"
+                        android:src="@drawable/logo" />
+
+
+                    <TextView
+                        android:id="@+id/emailLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/helvetica_neue_cyr_roman"
+                        android:lineSpacingExtra="2sp"
+                        android:lineSpacingMultiplier="1"
+                        android:text="Hello"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/emailInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:clipToPadding="false"
+                        android:paddingEnd="10dp"
+                        app:errorEnabled="true"
+                        app:errorString="@{viewModel.emailField.errorMessage}"
+
+                        android:paddingLeft="-4dp"
+                        app:hintEnabled="false">
+
+                        <android.support.v7.widget.AppCompatEditText
+                            style="@style/registrationFields"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            tools:binding="@{viewModel.emailField.string}"
+                            android:hint="@string/enter_email_hint"
+                            android:lineSpacingExtra="16sp" />
+
+
+                    </android.support.design.widget.TextInputLayout>
+
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/helvetica_neue_cyr_roman"
+                        android:shadowColor="@color/lightTea"
+                        android:text="@string/password_field_name"
+                        android:textColor="@color/white"
+                        android:textColorHighlight="@color/lightTea"
+                        android:textColorHint="@color/lightTea"
+                        android:textSize="14sp" />
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
+                        android:paddingLeft="-4dp"
+                        app:hintEnabled="false"
+                        app:passwordToggleEnabled="true">
+
+                        <EditText
+                            android:id="@+id/passwordTV"
+                            style="@style/registrationFields"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/enter_password_hint"
+                            android:inputType="textPassword"
+                            app:binding="@{viewModel.password}"
+                            app:passwordToggleEnabled="true" />
+
+
+                    </android.support.design.widget.TextInputLayout>
+
+
+                    <android.support.v7.widget.AppCompatButton
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="24dp"
+                        android:layout_marginTop="24dp"
+                        android:background="@drawable/gradient_button"
+                        android:fontFamily="@font/helvetica_neue_cyr_medium"
+                        android:padding="15dp"
+                        android:text="Регистрация"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+
+            </ScrollView>
+
+
+        </LinearLayout>
+
+</layout>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">TestTaskRegisterForm</string>
+    <string name="enter_password_hint">введите пароль</string>
+    <string name="enter_email_hint">введите Email</string>
+    <string name="email_field_name">Email</string>
+    <string name="password_field_name">Пароль</string>
+</resources>
