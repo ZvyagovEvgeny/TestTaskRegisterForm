@@ -50,6 +50,7 @@ public class App extends Application {
     public Scheduler subscribeScheduler() {
         if (scheduler == null) {
             scheduler = Schedulers.io();
+
         }
 
         return scheduler;
