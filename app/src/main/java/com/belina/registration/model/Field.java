@@ -10,6 +10,7 @@ public class Field extends BaseObservable{
     public ObservableField<String> string = new ObservableField<>("");
     public ObservableField<String> errorMessage = new ObservableField<>("");
     public ObservableBoolean isValid = new ObservableBoolean();
+    public ObservableField<ErrorType> errorType = new ObservableField(ErrorType.ERROR);
 
     private FieldChecker fieldChecker;
 

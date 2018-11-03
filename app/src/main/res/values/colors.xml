@@ -8,4 +8,7 @@
 
     <color name="white">#ffffff</color>
     <color name="lightTea">#aad2ed</color>
+    <color name="red">#FF0000</color>
+
+    <color name="yellow">#ffc400</color>
 </resources>

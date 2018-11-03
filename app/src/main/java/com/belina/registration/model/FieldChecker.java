@@ -6,5 +6,5 @@ import io.reactivex.Observable;
 
 public abstract class FieldChecker {
 
-    abstract public void check(Field field);
+    abstract public boolean check(Field field);
 }
