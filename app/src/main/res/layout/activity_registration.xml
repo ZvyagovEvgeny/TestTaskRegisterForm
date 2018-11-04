@@ -17,10 +17,9 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@drawable/bg">
-<!--
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">-->
+                android:layout_height="match_parent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -61,6 +60,7 @@
                         android:clipToPadding="false"
                         android:paddingEnd="10dp"
                         app:errorEnabled="true"
+                        tools:errorTextAppearance="@{viewModel.emailField.errorType}"
                         app:errorString="@{viewModel.emailField.errorMessage}"
 
                         android:paddingLeft="-4dp"
@@ -103,7 +103,8 @@
                         android:layout_marginTop="8dp"
                         android:paddingLeft="-4dp"
                         app:hintEnabled="false"
-                        app:passwordToggleEnabled="true">
+                        app:passwordToggleEnabled="true"
+                        app:errorString="@{viewModel.passwordField.errorMessage}">
 
                         <EditText
                             android:id="@+id/passwordTV"
@@ -112,7 +113,7 @@
                             android:layout_height="wrap_content"
                             android:hint="@string/enter_password_hint"
                             android:inputType="textPassword"
-                            app:binding="@{viewModel.password}"
+                            app:binding="@{viewModel.passwordField.string}"
                             app:passwordToggleEnabled="true"
                             android:nextFocusForward="@id/registerButton"
                             android:imeActionId="6"
@@ -140,8 +141,8 @@
 
                 </LinearLayout>
 
-<!--
-            </ScrollView>-->
+
+            </ScrollView>
 
 
         </LinearLayout>

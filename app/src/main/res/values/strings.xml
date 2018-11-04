@@ -28,4 +28,27 @@
         completions."
     </string>
 
+
+    Зарегестрироватся
+    Отмена
+    Пароль должен быть в диапазоне от {0} до {1}
+    Это обязательное поле
+    Символ @ должен втсречатся только 1 раз
+    Отсутвует символ @
+    Некорректный email
+    Некорректный email, проверьте символ:
+    Неизвестное доменное имя
+    Проверьте правильность Email
+
+    <string name="registration">Зарегестрироватся</string>
+    <string name="cancel">Отмена</string>
+    <string name="password_length_restrictions">Длина пароля должна быть в диапазоне от {0} до {1} символов</string>
+    <string name="symbol_at_occurs_more_than_once">Символ @ должен втсречатся только 1 раз</string>
+    <string name="symbol_at_is_present">Отсутвует символ @</string>
+    <string name="incorrect_email_check_symbol">Некорректный email, проверьте символ:</string>
+    <string name="unknown_domain_name">Неизвестное доменное имя</string>
+    <string name="check_domain_name">Проверьте правильность Email</string>
+    <string name="this_field_is_required">Это обязателное поле</string>
+
+
 </resources>

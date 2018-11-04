@@ -11,13 +11,18 @@ import android.support.v4.util.Pair;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.belina.registration.R;
 import com.belina.registration.model.ErrorType;
 import com.belina.registration.model.Field;
+
+import static android.text.Spanned.SPAN_EXCLUSIVE_INCLUSIVE;
 
 public class ObservableAdapters {
 
@@ -60,5 +65,18 @@ public class ObservableAdapters {
         int i = visibility?View.VISIBLE:View.INVISIBLE;
         view.setVisibility(i);
     }
+
+    @BindingAdapter("errorTextAppearance")
+    public static void visibilityAdapter(TextInputLayout view,ErrorType errorType){
+        if(errorType == ErrorType.ERROR)
+            view.setErrorTextAppearance(R.style.error_appearance);
+        if(errorType == ErrorType.WARNING)
+            view.setErrorTextAppearance(R.style.warning_appearance);
+
+    }
+
+
+
+
 
 }

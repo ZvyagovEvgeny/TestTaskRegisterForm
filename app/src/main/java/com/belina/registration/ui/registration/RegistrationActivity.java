@@ -1,9 +1,12 @@
 package com.belina.registration.ui.registration;
 
+import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
+import android.os.Build;
 import android.support.annotation.NonNull;
 
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 
 import com.belina.registration.R;
@@ -23,6 +26,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
     private RegistrationViewModel registrationViewModel;
     private ActivityRegistrationBinding databinding;
+    private ApplicationComponent component;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,28 +34,51 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
         component =  App.create(this).getMoviesDBComponent();
     }
 
-
-
-    ApplicationComponent component;
-
     @NonNull
     @Override
     protected ViewModelFactory<RegistrationViewModel> getViewModelFactory() {
 
-        return ()->new RegistrationViewModel(getContext(),component);
+        return ()->new RegistrationViewModel(getContext(),App.create(this).getMoviesDBComponent());
     }
 
     @Override
     protected void onViewModelCreatedOrRestored(@NonNull RegistrationViewModel viewModel) {
         this.registrationViewModel = viewModel;
+
+        compositeDisposable.add(registrationViewModel.messagePublishSubject.subscribe(this::showDilog));
+        component =  App.create(this).getMoviesDBComponent();
         initDataBinding();
+    }
+
+    private void showDilog(Message message){
+
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle(message.getTitle())
+                .setMessage(message.getMessage())
+                .setPositiveButton(message.getOkButton(), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        message.callOkCallback();
+                        // continue with delete
+                    }
+                })
+                .setNegativeButton(message.getCancelButton(), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .show();
+
     }
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private void initDataBinding() {
         databinding = DataBindingUtil.setContentView(this,R.layout.activity_registration);
         databinding.setViewModel(registrationViewModel);
-
 
         CustomFilterAdapter customFilterAdapter = new CustomFilterAdapter(
                 this,
@@ -60,6 +87,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
         databinding.emailTextView.setAdapter(customFilterAdapter);
         databinding.emailTextView.setOnFocusChangeListener(focusChangeListener);
+        databinding.passwordTV.setOnFocusChangeListener(focusChangeListener);
 
     }
 
@@ -69,11 +97,8 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
-            registrationViewModel.checkEmail();
-//            if(oldFocus && !hasFocus){
-//                registrationViewModel.checkEmail();
-//            }
-//            oldFocus = hasFocus;
+            registrationViewModel.checkEmail(false);
+            registrationViewModel.checkPassword(false);
         }
     };
 
@@ -81,11 +106,13 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
     public void onDestroy()
     {
         super.onDestroy();
-        compositeDisposable.dispose();
+
     }
 
-
-
-
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+        compositeDisposable.dispose();
+        compositeDisposable = new CompositeDisposable();
+    }
 }
