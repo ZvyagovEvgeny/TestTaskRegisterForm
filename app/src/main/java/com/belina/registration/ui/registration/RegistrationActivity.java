@@ -53,6 +53,12 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
 
         component =  App.create(this).getMoviesDBComponent();
+
+        compositeDisposable.add(registrationViewModel
+                .getMessageSubject().subscribe(this::showDialog));
+        compositeDisposable.add(registrationViewModel
+                .getProgressBarSubjet().subscribe(this::showProgressBar));
+
         initDataBinding();
     }
 
@@ -69,10 +75,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
         databinding.emailTextView.setOnFocusChangeListener(focusChangeListener);
         databinding.passwordTV.setOnFocusChangeListener(focusChangeListener);
 
-        compositeDisposable.add(registrationViewModel
-                .getMessageSubject().subscribe(this::showDialog));
-        compositeDisposable.add(registrationViewModel
-                .getProgressBarSubjet().subscribe(this::showProgressBar));
+
 
         databinding.registerFormLayout.setListener(this::onSoftKeyboardShown);
 
