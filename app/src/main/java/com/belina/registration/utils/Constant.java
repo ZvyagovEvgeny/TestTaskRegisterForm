@@ -28,6 +28,7 @@ public class Constant  {
     }
 
     public final static String IP_API_ADDRESS = "http://ip-api.com/";
+    public final static String IP_BALINA_SOFT_API = "http://junior.balinasoft.com/";
 
 
 

@@ -1,4 +1,4 @@
-package com.belina.registration.model;
+package com.belina.registration.model.email;
 
 public class EmailValidationResult {
 

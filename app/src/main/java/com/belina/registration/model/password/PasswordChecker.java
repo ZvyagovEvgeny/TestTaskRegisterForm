@@ -1,4 +1,4 @@
-package com.belina.registration.model;
+package com.belina.registration.model.password;
 
 public class PasswordChecker {
 

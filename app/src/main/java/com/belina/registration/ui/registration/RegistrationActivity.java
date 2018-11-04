@@ -1,6 +1,6 @@
 package com.belina.registration.ui.registration;
 
-import android.content.DialogInterface;
+import android.app.ProgressDialog;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -16,17 +16,23 @@ import com.belina.registration.ui.base.activity.BaseActivity;
 import com.belina.registration.databinding.ActivityRegistrationBinding;
 
 import com.belina.registration.ui.base.adapter.CustomFilterAdapter;
+import com.belina.registration.ui.base.events.Message;
+import com.belina.registration.ui.base.events.ProgressBarMessage;
 import com.belina.registration.ui.base.viewmodel.ViewModelFactory;
 
 import java.util.ArrayList;
 
 import io.reactivex.disposables.CompositeDisposable;
+import timber.log.Timber;
 
 public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
     private RegistrationViewModel registrationViewModel;
     private ActivityRegistrationBinding databinding;
     private ApplicationComponent component;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,37 +51,11 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
     protected void onViewModelCreatedOrRestored(@NonNull RegistrationViewModel viewModel) {
         this.registrationViewModel = viewModel;
 
-        compositeDisposable.add(registrationViewModel.messagePublishSubject.subscribe(this::showDilog));
+
         component =  App.create(this).getMoviesDBComponent();
         initDataBinding();
     }
 
-    private void showDilog(Message message){
-
-        AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
-        builder.setTitle(message.getTitle())
-                .setMessage(message.getMessage())
-                .setPositiveButton(message.getOkButton(), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        message.callOkCallback();
-                        // continue with delete
-                    }
-                })
-                .setNegativeButton(message.getCancelButton(), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                    }
-                })
-                .show();
-
-    }
-
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private void initDataBinding() {
         databinding = DataBindingUtil.setContentView(this,R.layout.activity_registration);
         databinding.setViewModel(registrationViewModel);
@@ -89,11 +69,39 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
         databinding.emailTextView.setOnFocusChangeListener(focusChangeListener);
         databinding.passwordTV.setOnFocusChangeListener(focusChangeListener);
 
+        compositeDisposable.add(registrationViewModel
+                .getMessageSubject().subscribe(this::showDialog));
+        compositeDisposable.add(registrationViewModel
+                .getProgressBarSubjet().subscribe(this::showProgressBar));
+
+        databinding.registerFormLayout.setListener(this::onSoftKeyboardShown);
+
     }
 
-    View.OnFocusChangeListener focusChangeListener =  new View.OnFocusChangeListener() {
+    private void showProgressBar(ProgressBarMessage progressBarMessage){
+        if(progressDialog==null)
+            progressDialog = new ProgressDialog(this,
+                  R.style.AppCompatAlertDialogStyle);
+        if(!progressBarMessage.isShow()){
+            progressDialog.dismiss();
+            return;
+        }
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage(progressBarMessage.getMessage());
+        progressDialog.show();
+        Timber.d("Before showing");
+    }
 
-        private boolean oldFocus = false;
+    public void onSoftKeyboardShown(boolean isShowing) {
+        if (isShowing) {
+            databinding.logo.setVisibility(View.GONE);
+
+        } else {
+            databinding.logo.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private View.OnFocusChangeListener focusChangeListener =  new View.OnFocusChangeListener() {
 
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
@@ -101,6 +109,23 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
             registrationViewModel.checkPassword(false);
         }
     };
+
+    private void showDialog(Message message){
+
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+
+        builder.setTitle(message.getTitle())
+                .setMessage(message.getMessage())
+                .setPositiveButton(message.getOkButton(), (dialog,which)->message.callOkCallback())
+                .setNegativeButton(message.getCancelButton(), (dialog,which)->{})
+                .show();
+
+    }
 
     @Override
     public void onDestroy()

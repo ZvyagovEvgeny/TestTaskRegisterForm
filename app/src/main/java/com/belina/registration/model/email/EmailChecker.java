@@ -1,4 +1,4 @@
-package com.belina.registration.model;
+package com.belina.registration.model.email;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-public class EmailCheckerV2 {
+public class EmailChecker {
 
 
     final String regex = "([a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256})\\@(([a-zA-Z0-9][a-zA-Z0-9\\-]{0,64})(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+)";
@@ -15,7 +15,7 @@ public class EmailCheckerV2 {
 
     private List<String> popularDomains;
 
-    public EmailCheckerV2( List<String> popularDomains){
+    public EmailChecker(List<String> popularDomains){
         this.popularDomains = popularDomains;
     }
 
@@ -78,6 +78,15 @@ public class EmailCheckerV2 {
             return matcher.group(2);
         }else return null;
     }
+
+    public String getEmailLokcalPart(String email){
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(email);
+        if(matcher.matches()){
+            return matcher.group(1);
+        }else return null;
+    }
+
 
     private static int indexOfLastMatch(Pattern pattern, String input) {
         Matcher matcher = pattern.matcher(input);

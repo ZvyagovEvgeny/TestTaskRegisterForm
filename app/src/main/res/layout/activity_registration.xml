@@ -10,8 +10,7 @@
             type="com.belina.registration.ui.registration.RegistrationViewModel" />
     </data>
 
-
-        <LinearLayout
+        <com.belina.registration.ui.base.activity.RelativeLayoutThatDetectsSoftKeyboard
             android:id="@+id/registerFormLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -41,31 +40,22 @@
 
 
                     <TextView
-                        android:id="@+id/emailLabel"
+                        style="@style/fieldNameStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/helvetica_neue_cyr_roman"
-                        android:lineSpacingExtra="2sp"
-                        android:lineSpacingMultiplier="1"
-                        android:text="Hello"
-                        android:textColor="@color/white"
-
-                        android:textSize="14sp" />
+                        android:text="@string/email_field_name" />
 
                     <android.support.design.widget.TextInputLayout
                         android:id="@+id/emailInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:clipToPadding="false"
-                        android:paddingEnd="10dp"
-                        app:errorEnabled="true"
-                        tools:errorTextAppearance="@{viewModel.emailField.errorType}"
-                        app:errorString="@{viewModel.emailField.errorMessage}"
+                        style="@style/textInputLayoutStyle"
 
-                        android:paddingLeft="-4dp"
-                        app:hintEnabled="false"
-                        android:nextFocusDown="@id/passwordTV">
+                        app:errorString="@{viewModel.emailField.errorMessage}"
+                        tools:errorTextAppearance = "@{viewModel.emailField.errorType}"
+                        android:nextFocusDown="@id/passwordTV"
+                        app:hintEnabled = "false"
+                        >
 
                         <AutoCompleteTextView
                             style="@style/registrationFields"
@@ -77,31 +67,26 @@
                             android:lines="1"
                             android:singleLine="true"
                             android:hint="@string/enter_email_hint"
+
                             android:lineSpacingExtra="16sp"
                             android:nextFocusForward="@id/passwordTV"/>
 
 
                     </android.support.design.widget.TextInputLayout>
 
-
-
                     <TextView
+                        style="@style/fieldNameStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/helvetica_neue_cyr_roman"
-                        android:shadowColor="@color/lightTea"
-                        android:text="@string/password_field_name"
-                        android:textColor="@color/white"
-                        android:textColorHighlight="@color/lightTea"
-                        android:textColorHint="@color/lightTea"
-                        android:textSize="14sp" />
+                        android:text="@string/password_field_name" />
+
 
                     <android.support.design.widget.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginTop="8dp"
-                        android:paddingLeft="-4dp"
+
+                        style="@style/textInputLayoutStyle"
+
                         app:hintEnabled="false"
                         app:passwordToggleEnabled="true"
                         app:errorString="@{viewModel.passwordField.errorMessage}">
@@ -116,9 +101,7 @@
                             app:binding="@{viewModel.passwordField.string}"
                             app:passwordToggleEnabled="true"
                             android:nextFocusForward="@id/registerButton"
-                            android:imeActionId="6"
-                            android:imeActionLabel="@string/action_sign_in_short"
-                            android:imeOptions="actionUnspecified"
+                            android:imeActionLabel="@string/sign_up_short"
 
                             />
 
@@ -135,8 +118,9 @@
                         android:background="@drawable/gradient_button"
                         android:fontFamily="@font/helvetica_neue_cyr_medium"
                         android:onClick="@{(view)->viewModel.onSendButtonClicked()}"
+
                         android:padding="15dp"
-                        android:text="Регистрация"
+                        android:text="@string/registration_short"
                         android:textSize="16sp" />
 
                 </LinearLayout>
@@ -145,6 +129,6 @@
             </ScrollView>
 
 
-        </LinearLayout>
+        </com.belina.registration.ui.base.activity.RelativeLayoutThatDetectsSoftKeyboard>
 
 </layout>
