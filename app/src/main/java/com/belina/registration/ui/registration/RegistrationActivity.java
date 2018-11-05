@@ -22,6 +22,7 @@ import com.belina.registration.ui.base.viewmodel.ViewModelFactory;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import timber.log.Timber;
 
@@ -54,12 +55,12 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
         component =  App.create(this).getMoviesDBComponent();
 
-        compositeDisposable.add(registrationViewModel
-                .getMessageSubject().subscribe(this::showDialog));
-        compositeDisposable.add(registrationViewModel
-                .getProgressBarSubjet().subscribe(this::showProgressBar));
+       registrationViewModel.message.observe(this,message -> showDialog(message));
+       registrationViewModel.progressBar.observe(this,progressBar->showProgressBar(progressBar));
 
-        initDataBinding();
+
+
+       initDataBinding();
     }
 
     private void initDataBinding() {
@@ -115,6 +116,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
     private void showDialog(Message message){
 
+        if(!message.isShow()){return;}
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
@@ -122,10 +124,17 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
             builder = new AlertDialog.Builder(this);
         }
 
+
         builder.setTitle(message.getTitle())
                 .setMessage(message.getMessage())
-                .setPositiveButton(message.getOkButton(), (dialog,which)->message.callOkCallback())
-                .setNegativeButton(message.getCancelButton(), (dialog,which)->{})
+                .setPositiveButton(message.getOkButton(), (dialog,which)-> {
+                    message.setShow(false);
+                    message.callOkCallback();
+                })
+                .setNegativeButton(message.getCancelButton(), (dialog,which)->{
+                    message.setShow(false);
+                    message.callCancelCallback();
+                })
                 .show();
 
     }
@@ -142,5 +151,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
         super.onPause();
         compositeDisposable.dispose();
         compositeDisposable = new CompositeDisposable();
+        registrationViewModel.message.removeObservers(this);
+        registrationViewModel.progressBar.removeObservers(this);
     }
 }

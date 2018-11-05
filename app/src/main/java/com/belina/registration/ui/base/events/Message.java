@@ -1,6 +1,13 @@
 package com.belina.registration.ui.base.events;
 
-public class Message {
+import android.databinding.BaseObservable;
+import android.databinding.ObservableBoolean;
+import android.databinding.ObservableField;
+
+public class Message extends BaseObservable {
+    public interface Callback{
+        void call();
+    }
 
     private String message;
     private String title;
@@ -8,12 +15,14 @@ public class Message {
     private Callback cancelCallback;
     private String okButton;
     private String cancelButton;
+    private boolean show = true;
 
     public String getMessage() {
         return message;
     }
 
-    public Message(String title, String message,String okButtonMessage, String cancelButtonMessage,  Callback okCallback,Callback cancelCallback) {
+    public Message(String title, String message,String okButtonMessage, String cancelButtonMessage,
+                   Callback okCallback,Callback cancelCallback) {
         this.message = message;
         this.title = title;
         this.okCallback = okCallback;
@@ -22,15 +31,7 @@ public class Message {
         this.cancelButton = cancelButtonMessage;
     }
 
-    public Message(String title, String message,String okButtonMessage, Callback callback) {
-        this.message = message;
-        this.title = title;
-        this.okCallback = callback;
-        this.okButton = okButtonMessage;
-    }
-
-    public interface Callback{
-        void call();
+    public Message() {
     }
 
     public void callOkCallback(){
@@ -49,5 +50,14 @@ public class Message {
 
     public String getCancelButton() {
         return cancelButton;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
+        notifyChange();
+    }
+
+    public boolean isShow() {
+        return show;
     }
 }

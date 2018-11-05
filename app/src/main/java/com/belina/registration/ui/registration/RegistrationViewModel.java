@@ -20,6 +20,7 @@ import com.belina.registration.ui.base.editableField.Field;
 import com.belina.registration.model.password.PasswordCheckResult;
 import com.belina.registration.model.password.PasswordChecker;
 import com.belina.registration.ui.base.events.Message;
+import com.belina.registration.ui.base.events.MessageBuilder;
 import com.belina.registration.ui.base.events.ProgressBarMessage;
 import com.belina.registration.ui.base.viewmodel.ObservableLiveData;
 import com.belina.registration.ui.base.viewmodel.StoredViewModel;
@@ -32,11 +33,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.BehaviorSubject;
 
 import timber.log.Timber;
 
@@ -49,20 +48,16 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
     public ObservableLiveData<Field>  emailField = new ObservableLiveData<>(new Field());
     public ObservableLiveData<Field> passwordField = new ObservableLiveData<>(new Field());
 
-    public ObservableField<String> message = new ObservableField<>();
 
-    private BehaviorSubject<Message> messageSubject = BehaviorSubject.create().create();
+  /*  private BehaviorSubject<Message> messageSubject = BehaviorSubject.create().create();
     private BehaviorSubject<ProgressBarMessage> progressDialogSubject
-            = BehaviorSubject.create();
+            = BehaviorSubject.create();*/
+
+    public ObservableLiveData<Message> message = new ObservableLiveData<>(new Message());
+    public ObservableLiveData<ProgressBarMessage> progressBar
+            = new ObservableLiveData<>(new ProgressBarMessage());
 
     private ApplicationComponent applicationComponent;
-
-    public Observable<Message> getMessageSubject() {
-        return messageSubject;
-    }
-    public Observable<ProgressBarMessage> getProgressBarSubjet(){
-        return progressDialogSubject;
-    }
 
     private EmailChecker emailChecker;
     private PasswordChecker passwordChecker = new PasswordChecker(
@@ -93,14 +88,14 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
             EmailValidationResult checkResult =
                     emailChecker.check(emailField.getValue().string.get());
             if(checkResult.emailStatus == EmailStatus.UNKNOWN_DOMAIN_NAME){
-                messageSubject.onNext(
-                        new Message(
-                                getStringRecource(R.string.check_domain_name),
-                                emailField.getValue().string.get(),
-                                getStringRecource(R.string.registration),
-                                getStringRecource(R.string.cancel),
-                                this::sendUserData,
-                                null));
+                Message message = new MessageBuilder()
+                        .setTitle(getStringRecource(R.string.check_domain_name))
+                        .setMessage(emailField.getValue().string.get())
+                        .setOkButtonMessage(getStringRecource(R.string.registration))
+                        .setCancelButtonMessage(getStringRecource(R.string.cancel))
+                        .setOkCallback(this::sendUserData).createMessage();
+
+                this.message.setValue(message);
             }else{
                 sendUserData();
             }
@@ -125,19 +120,23 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( this::onSignUp,this::onNetworkError));
-        progressDialogSubject.onNext(
-                new ProgressBarMessage(getStringRecource(R.string.registration_in_progress)));
+
+        progressBar.getValue().showMessage(getStringRecource(R.string.registration_in_progress));
+
 
     }
 
     private void onSignUp(BalinasoftResponce signUpResult){
         if(signUpResult.getStatus() == StatusCode.SUCCESS.getCode()){
-            progressDialogSubject.onNext(new ProgressBarMessage(false));
-            messageSubject.onNext(new Message(
-                    getStringRecource(R.string.registration_short),
-                    getStringRecource(R.string.registration_successful),
-                    getStringRecource(R.string.OK),
-                    null));
+            progressBar.getValue().close();
+
+            Message message = new MessageBuilder()
+                    .setTitle(getStringRecource(R.string.registration_short))
+                    .setMessage(getStringRecource(R.string.registration_successful))
+                    .setOkButtonMessage(getStringRecource(R.string.OK))
+                    .createMessage();
+
+            this.message.setValue(message);
         }else {
             Timber.d("Status not 200:"+signUpResult.getStatus());
         }
@@ -252,7 +251,7 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
 
     private void onNetworkError(Throwable t){
         Timber.d(t);
-        progressDialogSubject.onNext(new ProgressBarMessage(false));
+        progressBar.getValue().close();
         if(t instanceof HttpException){
 
             HttpException httpException = (HttpException)t;
@@ -292,11 +291,15 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
     }
 
     private void showMessage(String title,String message){
-        messageSubject.onNext(
-                new Message(title,
-                        message,
-                        getStringRecource(R.string.OK),
-                null));
+
+        Message newMessage = new MessageBuilder()
+                .setTitle(title)
+                .setMessage(message)
+                .setOkButtonMessage(getStringRecource(R.string.OK))
+                .createMessage();
+
+        this.message.setValue(newMessage);
+
     }
 
     @Override

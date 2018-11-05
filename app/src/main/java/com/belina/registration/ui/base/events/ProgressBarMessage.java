@@ -1,17 +1,27 @@
 package com.belina.registration.ui.base.events;
 
-public class ProgressBarMessage {
+import android.databinding.BaseObservable;
+import android.databinding.ObservableBoolean;
+
+public class ProgressBarMessage extends BaseObservable{
 
     private String message;
-    private boolean show;
+    private ObservableBoolean show = new ObservableBoolean(false);
 
-    public ProgressBarMessage(String message) {
-        this.message = message;
-        this.show = true;
+    public ProgressBarMessage() {
+        this.message = "";
+        this.show.set(false);
     }
 
-    public ProgressBarMessage(boolean show) {
-        this.show = show;
+    public void showMessage(String message){
+        this.message = message;
+        show.set(true);
+        notifyChange();
+    }
+
+    public void close(){
+        show.set(false);
+        notifyChange();
     }
 
     public String getMessage() {
@@ -23,6 +33,6 @@ public class ProgressBarMessage {
     }
 
     public boolean isShow() {
-        return show;
+        return show.get();
     }
 }
