@@ -15,7 +15,7 @@ public class Message extends BaseObservable {
     private Callback cancelCallback;
     private String okButton;
     private String cancelButton;
-    private boolean show = true;
+    private boolean show = false;
 
     public String getMessage() {
         return message;
@@ -29,10 +29,13 @@ public class Message extends BaseObservable {
         this.cancelCallback = cancelCallback;
         this.okButton = okButtonMessage;
         this.cancelButton = cancelButtonMessage;
+        this.show = true;
     }
 
     public Message() {
+        show = false;
     }
+
 
     public void callOkCallback(){
         if(okCallback!=null)okCallback.call();

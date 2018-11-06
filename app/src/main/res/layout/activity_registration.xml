@@ -18,7 +18,8 @@
             android:background="@drawable/bg">
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+               >
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -89,7 +90,9 @@
 
                         app:hintEnabled="false"
                         app:passwordToggleEnabled="true"
-                        app:errorString="@{viewModel.passwordField.errorMessage}">
+                        app:errorString="@{viewModel.passwordField.errorMessage}"
+                        app:passwordToggleTint="@color/white"
+                        >
 
                         <EditText
                             android:id="@+id/passwordTV"
@@ -101,6 +104,7 @@
                             app:binding="@{viewModel.passwordField.string}"
                             app:passwordToggleEnabled="true"
                             android:nextFocusForward="@id/registerButton"
+
                             android:imeActionLabel="@string/sign_up_short"
 
                             />
@@ -115,10 +119,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="24dp"
                         android:layout_marginTop="24dp"
+
                         android:background="@drawable/gradient_button"
                         android:fontFamily="@font/helvetica_neue_cyr_medium"
                         android:onClick="@{(view)->viewModel.onSendButtonClicked()}"
-
+                        android:textColor="@color/white"
                         android:padding="15dp"
                         android:text="@string/registration_short"
                         android:textSize="16sp" />
@@ -128,7 +133,6 @@
 
             </ScrollView>
 
-
-        </com.belina.registration.ui.base.activity.RelativeLayoutThatDetectsSoftKeyboard>
+    </com.belina.registration.ui.base.activity.RelativeLayoutThatDetectsSoftKeyboard>
 
 </layout>

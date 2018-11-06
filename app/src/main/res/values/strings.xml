@@ -39,15 +39,21 @@
     <string name="this_field_is_required">Это обязателное поле</string>
     <string name="registration_in_progress">Регистрация&#8230;</string>
     <string name="registration_error">Ошибка регистрации</string>
-    <string name="user_with_this_login_exists">Пользователь с таким логином существует</string>
+    <string name="user_with_this_login_exists">Пользователь с таким логином уже существует</string>
     <string name="unknown_error">Неивестная ошибка</string>
-    <string name="validation_error">Ошибка валидации</string>
+    <string name="validation_error">Ошибка при проверке данных на стороне сервера</string>
     <string name="sign_up_short">Sign Up</string>
     <string name="registration_short">Регистрация</string>
     <string name="registration_successful">Регистрация произведена успешно</string>
+    <string name="your_login_is">Ваш логин</string>
     <string name="OK">OK</string>
     <string name="incorrect_email">Некорректный email</string>
     <string name="incorrect_email_in_end">Некорректный email, проеверте окончание</string>
+    <string name="domain_name_not_exists">Доменное имя не существует</string>
+    <string name="checking_domain_name">Проверка доменного имени&#8230;</string>
+    <string name="error_checking_domain_name">Во время проверки доменного имени произошла ошибка</string>
+
+    <string name="unknown_host_exception">Проверьте соединение с интернетом</string>
 
 
 </resources>

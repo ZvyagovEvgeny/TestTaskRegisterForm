@@ -8,8 +8,21 @@ import retrofit2.http.Path;
 
 public interface IpApi {
 
-     String STATUS_SUCCESS = "success";
-     String STATUS_FAILD = "fail";
+    public enum Status{
+
+        SUCCESS("success"),
+        STATUS_FAIL("fail");
+
+        String status;
+
+        Status(String status){
+            this.status = status;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+    }
 
     @GET("json/{domain_address}")
     Observable<IpApiQueryResult> checkDomainName(@Path("domain_address")String address);

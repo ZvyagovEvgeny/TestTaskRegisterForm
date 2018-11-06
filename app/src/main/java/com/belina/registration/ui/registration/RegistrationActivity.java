@@ -30,7 +30,6 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
 
     private RegistrationViewModel registrationViewModel;
     private ActivityRegistrationBinding databinding;
-    private ApplicationComponent component;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ProgressDialog progressDialog;
 
@@ -38,54 +37,65 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        component =  App.create(this).getMoviesDBComponent();
     }
 
     @NonNull
     @Override
     protected ViewModelFactory<RegistrationViewModel> getViewModelFactory() {
-
         return ()->new RegistrationViewModel(getContext(),App.create(this).getMoviesDBComponent());
     }
 
     @Override
     protected void onViewModelCreatedOrRestored(@NonNull RegistrationViewModel viewModel) {
         this.registrationViewModel = viewModel;
-
-
-        component =  App.create(this).getMoviesDBComponent();
-
-       registrationViewModel.message.observe(this,message -> showDialog(message));
-       registrationViewModel.progressBar.observe(this,progressBar->showProgressBar(progressBar));
-
-
-
        initDataBinding();
     }
 
+    private android.databinding.Observable.OnPropertyChangedCallback onMessageChangedCallback =
+            new android.databinding.Observable.OnPropertyChangedCallback() {
+                @Override
+                public void onPropertyChanged(android.databinding.Observable sender, int propertyId) {
+                    showDialog(registrationViewModel.message.get());
+                }
+            };
+
+    private android.databinding.Observable.OnPropertyChangedCallback onProgressBarChangedCallback =
+            new android.databinding.Observable.OnPropertyChangedCallback() {
+                @Override
+                public void onPropertyChanged(android.databinding.Observable sender, int propertyId) {
+                    showProgressBar(registrationViewModel.progressBar.get());
+                }
+            };
+
     private void initDataBinding() {
-        databinding = DataBindingUtil.setContentView(this,R.layout.activity_registration);
+       databinding = DataBindingUtil.setContentView(this,R.layout.activity_registration);
         databinding.setViewModel(registrationViewModel);
 
         CustomFilterAdapter customFilterAdapter = new CustomFilterAdapter(
                 this,
                 android.R.layout.simple_list_item_1,new ArrayList<>(
-                component.getConstants().getDomains()));
+               registrationViewModel.getTrustedDomains()));
 
         databinding.emailTextView.setAdapter(customFilterAdapter);
+
+        registrationViewModel.message.addOnPropertyChangedCallback(onMessageChangedCallback);
+        registrationViewModel.progressBar.addOnPropertyChangedCallback(onProgressBarChangedCallback);
+        showDialog(registrationViewModel.message.get());
+        showProgressBar(registrationViewModel.progressBar.get());
+
         databinding.emailTextView.setOnFocusChangeListener(focusChangeListener);
         databinding.passwordTV.setOnFocusChangeListener(focusChangeListener);
-
-
 
         databinding.registerFormLayout.setListener(this::onSoftKeyboardShown);
 
     }
 
     private void showProgressBar(ProgressBarMessage progressBarMessage){
+        if(progressBarMessage==null)return;
         if(progressDialog==null)
             progressDialog = new ProgressDialog(this,
                   R.style.AppCompatAlertDialogStyle);
+
         if(!progressBarMessage.isShow()){
             progressDialog.dismiss();
             return;
@@ -115,7 +125,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
     };
 
     private void showDialog(Message message){
-
+        if(message==null)return;
         if(!message.isShow()){return;}
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -151,7 +161,7 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
         super.onPause();
         compositeDisposable.dispose();
         compositeDisposable = new CompositeDisposable();
-        registrationViewModel.message.removeObservers(this);
-        registrationViewModel.progressBar.removeObservers(this);
+        registrationViewModel.message.removeOnPropertyChangedCallback(onMessageChangedCallback);
+        registrationViewModel.progressBar.addOnPropertyChangedCallback(onProgressBarChangedCallback);
     }
 }

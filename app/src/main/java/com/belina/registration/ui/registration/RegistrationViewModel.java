@@ -5,6 +5,8 @@ import android.databinding.ObservableField;
 
 import com.belina.registration.dagger.component.ApplicationComponent;
 import com.belina.registration.R;
+import com.belina.registration.data.api.IpApi;
+import com.belina.registration.data.api.model.IpApiQueryResult;
 import com.belina.registration.data.balinasoft.api.model.Account;
 import com.belina.registration.data.balinasoft.api.model.AccountBuilder;
 import com.belina.registration.data.balinasoft.api.model.BalinasoftResponce;
@@ -22,6 +24,7 @@ import com.belina.registration.model.password.PasswordChecker;
 import com.belina.registration.ui.base.events.Message;
 import com.belina.registration.ui.base.events.MessageBuilder;
 import com.belina.registration.ui.base.events.ProgressBarMessage;
+import com.belina.registration.ui.base.viewmodel.AutoObservableField;
 import com.belina.registration.ui.base.viewmodel.ObservableLiveData;
 import com.belina.registration.ui.base.viewmodel.StoredViewModel;
 import com.belina.registration.ui.base.viewmodel.ViewModelBase;
@@ -33,8 +36,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import timber.log.Timber;
@@ -48,14 +53,10 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
     public ObservableLiveData<Field>  emailField = new ObservableLiveData<>(new Field());
     public ObservableLiveData<Field> passwordField = new ObservableLiveData<>(new Field());
 
+    public AutoObservableField<Message> message = new AutoObservableField<>(new Message());
 
-  /*  private BehaviorSubject<Message> messageSubject = BehaviorSubject.create().create();
-    private BehaviorSubject<ProgressBarMessage> progressDialogSubject
-            = BehaviorSubject.create();*/
-
-    public ObservableLiveData<Message> message = new ObservableLiveData<>(new Message());
-    public ObservableLiveData<ProgressBarMessage> progressBar
-            = new ObservableLiveData<>(new ProgressBarMessage());
+    public AutoObservableField<ProgressBarMessage> progressBar
+            = new AutoObservableField<>(new ProgressBarMessage());
 
     private ApplicationComponent applicationComponent;
 
@@ -65,15 +66,24 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
             MAX_PASSWORD_LENGTH);
 
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private ArrayList<String> trustedDomains;
 
+
+    public List<String> getTrustedDomains(){
+        return trustedDomains;
+    }
 
     public RegistrationViewModel(Context context, ApplicationComponent applicationComponent){
 
         this.context = context.getApplicationContext();
         this.applicationComponent = applicationComponent;
-        List<String> allowedDomainNames =
-                new ArrayList<>( applicationComponent.getConstants().getDomains());
-        emailChecker = new EmailChecker(allowedDomainNames);
+        this.trustedDomains = new ArrayList<>(applicationComponent.getConstants().getDomains());
+        emailChecker = new EmailChecker(trustedDomains);
+    }
+
+    private Observable<IpApiQueryResult> checkDomainName(String address){
+        return applicationComponent.ipApi().checkDomainName(address).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
 
     }
 
@@ -85,21 +95,41 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
         }
 
         if(checkEmail(true)){
+
             EmailValidationResult checkResult =
                     emailChecker.check(emailField.getValue().string.get());
-            if(checkResult.emailStatus == EmailStatus.UNKNOWN_DOMAIN_NAME){
-                Message message = new MessageBuilder()
-                        .setTitle(getStringRecource(R.string.check_domain_name))
-                        .setMessage(emailField.getValue().string.get())
-                        .setOkButtonMessage(getStringRecource(R.string.registration))
-                        .setCancelButtonMessage(getStringRecource(R.string.cancel))
-                        .setOkCallback(this::sendUserData).createMessage();
 
-                this.message.setValue(message);
+            if(checkResult.emailStatus == EmailStatus.UNKNOWN_DOMAIN_NAME){
+
+                String domainName = emailChecker.getEmailDomain(emailField.getValue().string.get());
+
+                Disposable d = checkDomainName(domainName)
+                        .map(this::onCheckDomainResult)
+                        .subscribe((domainExists)->{
+                            closeProgressBar();
+                            if(domainExists){
+                                trustedDomains.add("@"+domainName);
+                                sendUserData();
+                            }
+                            else{
+                                showMessage(getStringRecource(R.string.registration_error),
+                                        getStringRecource(R.string.domain_name_not_exists));
+                                emailField.getValue().errorMessage.set(
+                                        getStringRecource(R.string.domain_name_not_exists));
+                            }
+                        },this::onIpApiError);
+                compositeDisposable.add(d);
+                showProgressBar(getStringRecource(R.string.check_domain_name));
+
             }else{
                 sendUserData();
             }
         }
+    }
+
+
+    private boolean onCheckDomainResult(IpApiQueryResult result){
+        return result.getStatus().equals(IpApi.Status.SUCCESS.getStatus());
     }
 
     private void sendUserData(){
@@ -119,26 +149,31 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
         compositeDisposable.add(applicationComponent.balinaSoftApi().signup(account)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe( this::onSignUp,this::onNetworkError));
+                .subscribe( this::onSignUp,this::onSignInError));
 
-        progressBar.getValue().showMessage(getStringRecource(R.string.registration_in_progress));
+       showProgressBar(getStringRecource(R.string.registration_in_progress));
 
 
     }
 
     private void onSignUp(BalinasoftResponce signUpResult){
+        closeProgressBar();
         if(signUpResult.getStatus() == StatusCode.SUCCESS.getCode()){
-            progressBar.getValue().close();
+
+            String login = signUpResult.getData().getLogin();
 
             Message message = new MessageBuilder()
                     .setTitle(getStringRecource(R.string.registration_short))
-                    .setMessage(getStringRecource(R.string.registration_successful))
+                    .setMessage(
+                            getStringRecource(R.string.registration_successful)+"\n"+
+                                    getStringRecource(R.string.your_login_is)+": "
+                                    + login)
                     .setOkButtonMessage(getStringRecource(R.string.OK))
                     .createMessage();
 
-            this.message.setValue(message);
+            this.message.set(message);
         }else {
-            Timber.d("Status not 200:"+signUpResult.getStatus());
+            Timber.d("Status is not 200:"+signUpResult.getStatus());
         }
     }
 
@@ -152,7 +187,6 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
         printEmailValidationResult(validationResult,errorField,userEmail,printErrorIfFieldIsEmpty);
 
         if(validationResult.emailStatus == EmailStatus.UNKNOWN_DOMAIN_NAME){
-            emailField.getValue().errorType.set(ErrorType.WARNING);
             return true;
         }
 
@@ -233,9 +267,6 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
                             email.charAt(validationResult.indexOfError));
                 }
                 break;
-            case UNKNOWN_DOMAIN_NAME:
-                errorField.set(getStringRecource(R.string.unknown_domain_name));
-                break;
                 default:
                    break;
 
@@ -249,9 +280,9 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
 
 
 
-    private void onNetworkError(Throwable t){
+    private void onSignInError(Throwable t){
         Timber.d(t);
-        progressBar.getValue().close();
+        closeProgressBar();
         if(t instanceof HttpException){
 
             HttpException httpException = (HttpException)t;
@@ -284,10 +315,49 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
                 Timber.d(e);
             }
         }
+        else if(t instanceof java.net.UnknownHostException){
+            showMessage(getStringRecource(R.string.registration_error),
+                    getStringRecource(R.string.unknown_host_exception));
+        }
         else {
             showMessage(getStringRecource(R.string.registration_error),
                     getStringRecource(R.string.unknown_error));
         }
+    }
+
+    private void onIpApiError(Throwable t){
+        Timber.d(t);
+        closeProgressBar();
+
+
+        if(t instanceof HttpException){
+
+            HttpException httpException = (HttpException)t;
+
+            httpException.message();
+
+            showMessage(getStringRecource(R.string.registration_error),
+                    getStringRecource(R.string.error_checking_domain_name)+
+                            "\n"+"Code: "+ httpException.code()+
+                            "\n"+"Message: "+httpException.message());
+        }
+        else if(t instanceof java.net.UnknownHostException){
+            showMessage(getStringRecource(R.string.registration_error),
+                    getStringRecource(R.string.unknown_host_exception));
+        }
+        else {
+            showMessage(getStringRecource(R.string.registration_error),
+                    getStringRecource(R.string.error_checking_domain_name));
+        }
+    }
+
+    private void showProgressBar(String message){
+        progressBar.get().showMessage(message);
+
+    }
+    private void closeProgressBar(){
+        progressBar.get().close();
+
     }
 
     private void showMessage(String title,String message){
@@ -298,7 +368,7 @@ public class RegistrationViewModel extends ViewModelBase implements StoredViewMo
                 .setOkButtonMessage(getStringRecource(R.string.OK))
                 .createMessage();
 
-        this.message.setValue(newMessage);
+        this.message.set(newMessage);
 
     }
 
