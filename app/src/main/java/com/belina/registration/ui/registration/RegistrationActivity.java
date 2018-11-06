@@ -154,14 +154,16 @@ public class RegistrationActivity extends BaseActivity<RegistrationViewModel> {
     {
         super.onDestroy();
 
+        compositeDisposable.dispose();
+        compositeDisposable = new CompositeDisposable();
+        registrationViewModel.message.removeOnPropertyChangedCallback(onMessageChangedCallback);
+        registrationViewModel.progressBar.addOnPropertyChangedCallback(onProgressBarChangedCallback);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        compositeDisposable.dispose();
-        compositeDisposable = new CompositeDisposable();
-        registrationViewModel.message.removeOnPropertyChangedCallback(onMessageChangedCallback);
-        registrationViewModel.progressBar.addOnPropertyChangedCallback(onProgressBarChangedCallback);
+
     }
 }
